@@ -1,8 +1,10 @@
 import { simulatorConfig } from "../config/simulatorConfig";
 import { useAppSelector } from "../hooks/useAppSelector";
+import type { FlightViewMode } from "../types/viewMode";
 
 interface Props {
   config?: typeof simulatorConfig;
+  viewMode?: FlightViewMode;
 }
 
 function fmt(value: number, decimals = 0) {
@@ -12,7 +14,7 @@ function fmt(value: number, decimals = 0) {
   });
 }
 
-export default function HudOverlay({ config = simulatorConfig }: Props) {
+export default function HudOverlay({ config = simulatorConfig, viewMode = "FLIGHT_CAMERA" }: Props) {
   const flight = useAppSelector((s) => s.flight);
   const annotations = config.annotations;
 
@@ -25,11 +27,11 @@ export default function HudOverlay({ config = simulatorConfig }: Props) {
           <div className="hud-card"><span>HDG</span><strong>{fmt(flight.headingDeg)}°</strong></div>
           <div className="hud-card"><span>PITCH</span><strong>{fmt(flight.pitchDeg, 1)}°</strong></div>
           <div className="hud-card"><span>ROLL</span><strong>{fmt(flight.rollDeg, 1)}°</strong></div>
-          <div className="hud-card"><span>TRAIL</span><strong>{flight.trail.length}</strong></div>
+          <div className="hud-card"><span>VIEW</span><strong>{viewMode === "FLIGHT_CAMERA" ? "FLIGHT" : "SIDE"}</strong></div>
         </div>
       )}
 
-      {(annotations.crosshair || annotations.attitudeIndicator) && (
+      {viewMode === "FLIGHT_CAMERA" && (annotations.crosshair || annotations.attitudeIndicator) && (
         <div className="hud-center">
           {annotations.crosshair && (
             <>

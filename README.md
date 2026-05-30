@@ -1,46 +1,40 @@
-# Cesium Flight Simulator — AIM-120D Fixed Orientation + Reliable Trail
+# Cesium Flight Simulator — Map Side Camera
 
-זו גרסה מתוקנת לשתי הבעיות האחרונות:
+הגרסה הזאת מתקנת את התצוגה לפי מה שביקשת:
 
-## 1. השובל לא נראה
+## לא חלון נפרד
 
-תוקן כך:
-- השובל משתמש עכשיו ב־`CallbackProperty`.
-- זה אומר שהקו מתעדכן תמיד מתוך `trailPositionsRef`.
-- השובל הוא קו בלבד.
-- הקו עבה יותר: `width: 12`.
-- צבע Cyan חזק.
-- `depthFailMaterial` מוגדר כדי שלא ייעלם מאחורי terrain.
+אין יותר תצוגת צד כ־panel מעל המפה.
 
-## 2. Pitch/Roll היו הפוכים במודל
+במקום זה יש כפתור שמחליף את **מצלמת Cesium עצמה**:
 
-תוקן בקונפיג:
-
-```ts
-aircraft: {
-  orientationMode: "SWAP_PITCH_ROLL"
-}
+```text
+מצלמת טיסה | צד בתוך המפה
 ```
 
-כלומר:
-- פיזיקת הטיסה נשארת נכונה.
-- רק התצוגה של המודל מתקנת את החלפת הצירים.
-- חץ למעלה / W אמור להזיז את האף למעלה/למטה.
-- חץ ימינה/שמאלה אמור לעשות Roll.
+## מצב 1 — מצלמת טיסה
 
-## 3. מצלמה אמיתית קדימה
+מה שהיה:
+- טיסה מאחורי הטיל
+- שובל קו
+- מפה/תצלום אוויר
 
-המצלמה כבר לא משתמשת ב־Cesium `lookAt` הרגיל.
-במקום זה יש מצלמה ידנית:
+## מצב 2 — צד בתוך המפה
 
-```ts
-mode: "MANUAL_FORWARD_CHASE"
+זה בתוך Cesium עצמו:
+- המצלמה עוברת לצד המסלול
+- רואים את כל הנתיב/שובל מהצד
+- רואים את הטיל בתוך המפה
+- רואים את הגובה והטיסה ביחס לקרקע
+- אין חלון נפרד ואין גרף חיצוני
+
+## קבצים חשובים
+
+```text
+src/components/ViewModeToggle.tsx
+src/components/CesiumScene.tsx
+src/types/viewMode.ts
 ```
-
-היא:
-- ממוקמת מאחורי הטיל.
-- מסתכלת קדימה לכיוון הטיסה.
-- לא אמורה להרגיש כמו רוורס.
 
 ## הרצה
 
@@ -49,44 +43,13 @@ npm install
 npm run dev
 ```
 
-## קונפיג מרכזי
-
-```text
-src/config/simulatorConfig.ts
-```
-
-### אם המודל עדיין לא נכון
-
-נסה לשנות:
-
-```ts
-orientationMode: "NORMAL"
-```
-
-או להשאיר:
-
-```ts
-orientationMode: "SWAP_PITCH_ROLL"
-```
-
-### אם הכיוון עדיין הפוך קדימה/אחורה
-
-```ts
-modelHeadingOffsetDeg: 180
-```
-
-### אם המפה מרגישה הפוכה
-
-```ts
-headingCameraOffsetDeg: 180
-```
-
-## שילוב בפרויקט קיים
+## שימוש בפרויקט קיים
 
 ```tsx
 <FlightSimulatorWidget
   mode="EXTERNAL"
   enableKeyboard={false}
+  initialViewMode="MAP_SIDE_CAMERA"
   externalTelemetry={{
     latitude: 32.0853,
     longitude: 34.7818,
@@ -97,4 +60,10 @@ headingCameraOffsetDeg: 180
     rollDeg: 10
   }}
 />
+```
+
+אפשר להתחיל במצלמת טיסה:
+
+```tsx
+initialViewMode="FLIGHT_CAMERA"
 ```

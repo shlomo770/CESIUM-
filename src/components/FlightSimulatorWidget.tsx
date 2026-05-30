@@ -1,4 +1,4 @@
-import { MutableRefObject, useEffect, useMemo } from "react";
+import { MutableRefObject, useEffect, useMemo, useState } from "react";
 import { Provider } from "react-redux";
 import { simulatorConfig } from "../config/simulatorConfig";
 import { deepMerge } from "../config/mergeConfig";
@@ -7,9 +7,11 @@ import { useAppDispatch } from "../hooks/useAppDispatch";
 import { applyExternalTelemetry, setMode } from "../store/flightSlice";
 import { store } from "../store/store";
 import type { FlightInputs, FlightTelemetry } from "../types/flight";
+import type { FlightViewMode } from "../types/viewMode";
 import CesiumScene from "./CesiumScene";
 import HudOverlay from "./HudOverlay";
 import ScreenAircraftOverlay from "./ScreenAircraftOverlay";
+import ViewModeToggle from "./ViewModeToggle";
 
 type SimulatorConfig = typeof simulatorConfig;
 
@@ -19,6 +21,7 @@ export interface FlightSimulatorWidgetProps {
   enableKeyboard?: boolean;
   configOverride?: Partial<SimulatorConfig>;
   externalInputsRef?: MutableRefObject<FlightInputs>;
+  initialViewMode?: FlightViewMode;
   className?: string;
 }
 
@@ -28,8 +31,11 @@ function InternalWidget({
   enableKeyboard = true,
   configOverride,
   externalInputsRef,
+  initialViewMode = "FLIGHT_CAMERA",
   className
 }: FlightSimulatorWidgetProps) {
+  const [viewMode, setViewMode] = useState<FlightViewMode>(initialViewMode);
+
   const dispatch = useAppDispatch();
   const mergedConfig = useMemo(
     () => deepMerge(simulatorConfig, configOverride as Partial<SimulatorConfig> | undefined),
@@ -51,9 +57,10 @@ function InternalWidget({
 
   return (
     <div className={className ?? "sim-root"}>
-      <CesiumScene inputsRef={inputsRef} config={mergedConfig} />
-      <ScreenAircraftOverlay config={mergedConfig} />
-      <HudOverlay config={mergedConfig} />
+      <CesiumScene inputsRef={inputsRef} config={mergedConfig} viewMode={viewMode} />
+      <ScreenAircraftOverlay config={mergedConfig} viewMode={viewMode} />
+      <HudOverlay config={mergedConfig} viewMode={viewMode} />
+      <ViewModeToggle value={viewMode} onChange={setViewMode} />
     </div>
   );
 }

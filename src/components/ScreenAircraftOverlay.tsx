@@ -1,17 +1,21 @@
 import { simulatorConfig } from "../config/simulatorConfig";
 import { useAppSelector } from "../hooks/useAppSelector";
+import type { FlightViewMode } from "../types/viewMode";
 
 interface Props {
   config?: typeof simulatorConfig;
+  viewMode?: FlightViewMode;
 }
 
 /**
- * משמש רק אם בוחרים renderMode: "SCREEN_OVERLAY".
- * בברירת המחדל של הפרויקט הזה משתמשים במודל GLB אמיתי.
+ * מסך טיסה רגיל בלבד.
+ * בתצוגת צד בתוך המפה לא מציגים overlay,
+ * כי רוצים לראות את הטיל האמיתי/מודל בתוך Cesium.
  */
-export default function ScreenAircraftOverlay({ config = simulatorConfig }: Props) {
+export default function ScreenAircraftOverlay({ config = simulatorConfig, viewMode = "FLIGHT_CAMERA" }: Props) {
   const flight = useAppSelector((s) => s.flight);
 
+  if (viewMode !== "FLIGHT_CAMERA") return null;
   if (config.aircraft.renderMode !== "SCREEN_OVERLAY") return null;
 
   const size = config.aircraft.screenSizePx;
@@ -28,9 +32,17 @@ export default function ScreenAircraftOverlay({ config = simulatorConfig }: Prop
       }}
     >
       <svg viewBox="0 0 200 200" className="screen-aircraft-svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="grayBody" x1="0" x2="1">
+            <stop offset="0%" stopColor="#6b7280" />
+            <stop offset="50%" stopColor="#d1d5db" />
+            <stop offset="100%" stopColor="#6b7280" />
+          </linearGradient>
+        </defs>
+
         <path
           d="M100 12 C111 42 121 72 122 104 L113 166 L100 190 L87 166 L78 104 C79 72 89 42 100 12 Z"
-          fill="#9ca3af"
+          fill="url(#grayBody)"
           stroke="#111827"
           strokeWidth="5"
         />
