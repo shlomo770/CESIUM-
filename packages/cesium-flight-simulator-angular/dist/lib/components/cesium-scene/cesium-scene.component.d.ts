@@ -1,0 +1,31 @@
+import { AfterViewInit, ElementRef, OnChanges, OnDestroy, SimpleChanges } from "@angular/core";
+import { ResolvedSimulatorConfig } from "../../cesium/cesium-scene.helpers";
+import { FlightStateService } from "../../services/flight-state.service";
+import { KeyboardInputService } from "../../services/keyboard-input.service";
+import type { FlightViewMode } from "../../types/viewMode";
+import * as i0 from "@angular/core";
+export declare class CesiumSceneComponent implements AfterViewInit, OnChanges, OnDestroy {
+    private readonly flightState;
+    private readonly keyboardInput;
+    containerRef: ElementRef<HTMLDivElement>;
+    config: ResolvedSimulatorConfig;
+    viewMode: FlightViewMode;
+    cesiumIonToken?: string;
+    private viewer;
+    private aircraft;
+    private trail;
+    private sideCurrent;
+    private sideGround;
+    private trailPositions;
+    private lastTick;
+    private flightSub?;
+    constructor(flightState: FlightStateService, keyboardInput: KeyboardInputService);
+    ngAfterViewInit(): void;
+    ngOnChanges(changes: SimpleChanges): void;
+    ngOnDestroy(): void;
+    private applySceneSettings;
+    private setupEntities;
+    private syncFlightToScene;
+    static ɵfac: i0.ɵɵFactoryDeclaration<CesiumSceneComponent, never>;
+    static ɵcmp: i0.ɵɵComponentDeclaration<CesiumSceneComponent, "cfs-cesium-scene", never, { "config": "config"; "viewMode": "viewMode"; "cesiumIonToken": "cesiumIonToken"; }, {}, never, never, false, never>;
+}

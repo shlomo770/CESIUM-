@@ -1,0 +1,112 @@
+<div *ngIf="mergedConfig.window.displayMode === 'floating'; else embeddedHost" class="cfs-floating-root">
+  <div
+    class="cfs-floating-shell"
+    [ngStyle]="floatingShellStyle"
+    role="dialog"
+    [attr.aria-label]="mergedConfig.window.floating.title"
+  >
+    <div
+      class="cfs-floating-header"
+      [class.is-draggable]="mergedConfig.window.floating.draggable"
+      (mousedown)="onFloatingHeaderMouseDown($event)"
+    >
+      {{ mergedConfig.window.floating.title }}
+    </div>
+    <div class="sim-root sim-root--floating" [class]="className">
+      <ng-container *ngTemplateOutlet="simulatorContent"></ng-container>
+    </div>
+  </div>
+</div>
+
+<ng-template #embeddedHost>
+  <div [ngClass]="shellClass" [ngStyle]="embeddedStyle">
+    <ng-container *ngTemplateOutlet="simulatorContent"></ng-container>
+  </div>
+</ng-template>
+
+<ng-template #simulatorContent>
+  <cfs-cesium-scene
+    [config]="mergedConfig"
+    [viewMode]="viewMode"
+    [cesiumIonToken]="cesiumIonToken"
+  ></cfs-cesium-scene>
+
+  <ng-container *ngIf="flight$ | async as flight">
+    <div
+      *ngIf="viewMode === 'FLIGHT_CAMERA' && mergedConfig.aircraft.renderMode === 'SCREEN_OVERLAY'"
+      class="screen-aircraft-layer"
+      [ngStyle]="{
+        transform:
+          'translate(-50%, calc(-50% + ' +
+          (mergedConfig.aircraft.screenOffsetYPx + -flight.pitchDeg * 1.05) +
+          'px)) rotate(' +
+          -flight.rollDeg +
+          'deg)',
+        width: mergedConfig.aircraft.screenSizePx + 'px',
+        height: mergedConfig.aircraft.screenSizePx + 'px'
+      }"
+    >
+      <svg viewBox="0 0 200 200" class="screen-aircraft-svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="cfsGrayBody" x1="0" x2="1">
+            <stop offset="0%" stop-color="#6b7280" />
+            <stop offset="50%" stop-color="#d1d5db" />
+            <stop offset="100%" stop-color="#6b7280" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M100 12 C111 42 121 72 122 104 L113 166 L100 190 L87 166 L78 104 C79 72 89 42 100 12 Z"
+          fill="url(#cfsGrayBody)"
+          stroke="#111827"
+          stroke-width="5"
+        />
+        <path d="M83 128 L43 160 L90 149 Z" fill="#9ca3af" stroke="#111827" stroke-width="5" />
+        <path d="M117 128 L157 160 L110 149 Z" fill="#9ca3af" stroke="#111827" stroke-width="5" />
+      </svg>
+    </div>
+
+    <div class="hud">
+      <div class="hud-top" *ngIf="mergedConfig.annotations.hudTop">
+        <div class="hud-card"><span>SPD</span><strong>{{ fmt(flight.speedMps * 3.6) }} km/h</strong></div>
+        <div class="hud-card"><span>ALT</span><strong>{{ fmt(flight.altitudeM) }} m</strong></div>
+        <div class="hud-card"><span>HDG</span><strong>{{ fmt(flight.headingDeg) }}°</strong></div>
+        <div class="hud-card"><span>PITCH</span><strong>{{ fmt(flight.pitchDeg, 1) }}°</strong></div>
+        <div class="hud-card"><span>ROLL</span><strong>{{ fmt(flight.rollDeg, 1) }}°</strong></div>
+        <div class="hud-card"><span>VIEW</span><strong>{{ viewMode === 'FLIGHT_CAMERA' ? 'FLIGHT' : 'SIDE' }}</strong></div>
+      </div>
+
+      <div
+        class="hud-center"
+        *ngIf="viewMode === 'FLIGHT_CAMERA' && (mergedConfig.annotations.crosshair || mergedConfig.annotations.attitudeIndicator)"
+      >
+        <ng-container *ngIf="mergedConfig.annotations.crosshair">
+          <div class="crosshair horizontal"></div>
+          <div class="crosshair vertical"></div>
+          <div class="center-dot"></div>
+        </ng-container>
+        <div
+          *ngIf="mergedConfig.annotations.attitudeIndicator"
+          class="attitude-line"
+          [ngStyle]="{ transform: 'rotate(' + -flight.rollDeg + 'deg) translateY(' + -flight.pitchDeg * 1.25 + 'px)' }"
+        ></div>
+      </div>
+
+      <div class="hud-bottom" *ngIf="mergedConfig.annotations.bottomTelemetry">
+        <div>LAT {{ fmt(flight.latitude, 5) }}</div>
+        <div>LNG {{ fmt(flight.longitude, 5) }}</div>
+        <div>ALT {{ fmt(flight.altitudeM) }}m</div>
+        <div>TRAIL {{ flight.trail.length }}</div>
+        <div class="pause-pill" *ngIf="flight.paused">PAUSED</div>
+      </div>
+    </div>
+  </ng-container>
+
+  <div class="view-mode-toggle" *ngIf="mergedConfig.window.showViewModeToggle">
+    <button type="button" [class.active]="viewMode === 'FLIGHT_CAMERA'" (click)="setViewMode('FLIGHT_CAMERA')">
+      Flight camera
+    </button>
+    <button type="button" [class.active]="viewMode === 'MAP_SIDE_CAMERA'" (click)="setViewMode('MAP_SIDE_CAMERA')">
+      Side map view
+    </button>
+  </div>
+</ng-template>

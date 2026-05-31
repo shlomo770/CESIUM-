@@ -1,0 +1,42 @@
+{
+  "name": "@cesium-suite/cesium-flight-simulator-angular",
+  "version": "1.0.0",
+  "description": "Angular library (v11+) for the Cesium globe flight simulator with map tiles, HUD, and telemetry",
+  "peerDependencies": {
+    "@angular/common": ">=11.0.0",
+    "@angular/core": ">=11.0.0",
+    "cesium": "^1.110.0",
+    "rxjs": "^6.5.3 || ^7.0.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "angular",
+    "cesium",
+    "flight-simulator",
+    "telemetry",
+    "gltf"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "ng-packagr -p ng-package.json && node scripts/patch-dist-package.cjs",
+    "pack": "npm run build && cd dist && npm pack",
+    "typecheck": "tsc -p tsconfig.lib.json --noEmit"
+  },
+  "devDependencies": {
+    "@angular/common": "^15.2.10",
+    "@angular/compiler": "^15.2.10",
+    "@angular/compiler-cli": "^15.2.10",
+    "@angular/core": "^15.2.10",
+    "cesium": "^1.120.0",
+    "ng-packagr": "^15.2.2",
+    "rxjs": "^7.8.1",
+    "typescript": "~4.9.5",
+    "zone.js": "~0.12.0"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

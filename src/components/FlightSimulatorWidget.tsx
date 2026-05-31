@@ -1,7 +1,7 @@
 import { MutableRefObject, useEffect, useMemo, useState } from "react";
 import { Provider } from "react-redux";
 import { simulatorConfig } from "../config/simulatorConfig";
-import { deepMerge } from "../config/mergeConfig";
+import { deepMerge, type DeepPartial } from "../config/mergeConfig";
 import { useKeyboardControls } from "../hooks/useKeyboardControls";
 import { useAppDispatch } from "../hooks/useAppDispatch";
 import { applyExternalTelemetry, setMode } from "../store/flightSlice";
@@ -12,14 +12,16 @@ import CesiumScene from "./CesiumScene";
 import HudOverlay from "./HudOverlay";
 import ScreenAircraftOverlay from "./ScreenAircraftOverlay";
 import ViewModeToggle from "./ViewModeToggle";
+import WidgetShell from "./WidgetShell";
 
-type SimulatorConfig = typeof simulatorConfig;
+export type SimulatorConfig = typeof simulatorConfig;
 
 export interface FlightSimulatorWidgetProps {
   mode?: "INTERNAL" | "EXTERNAL";
   externalTelemetry?: FlightTelemetry;
   enableKeyboard?: boolean;
-  configOverride?: Partial<SimulatorConfig>;
+  /** Partial config merged onto {@link simulatorConfig} defaults. */
+  configOverride?: DeepPartial<SimulatorConfig>;
   externalInputsRef?: MutableRefObject<FlightInputs>;
   initialViewMode?: FlightViewMode;
   className?: string;
@@ -38,7 +40,7 @@ function InternalWidget({
 
   const dispatch = useAppDispatch();
   const mergedConfig = useMemo(
-    () => deepMerge(simulatorConfig, configOverride as Partial<SimulatorConfig> | undefined),
+    () => deepMerge(simulatorConfig, configOverride),
     [configOverride]
   );
 
@@ -56,12 +58,14 @@ function InternalWidget({
   }, [dispatch, mode, mergedConfig.mode, externalTelemetry]);
 
   return (
-    <div className={className ?? "sim-root"}>
+    <WidgetShell windowConfig={mergedConfig.window} className={className}>
       <CesiumScene inputsRef={inputsRef} config={mergedConfig} viewMode={viewMode} />
       <ScreenAircraftOverlay config={mergedConfig} viewMode={viewMode} />
       <HudOverlay config={mergedConfig} viewMode={viewMode} />
-      <ViewModeToggle value={viewMode} onChange={setViewMode} />
-    </div>
+      {mergedConfig.window.showViewModeToggle && (
+        <ViewModeToggle value={viewMode} onChange={setViewMode} />
+      )}
+    </WidgetShell>
   );
 }
 

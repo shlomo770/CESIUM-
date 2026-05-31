@@ -18,6 +18,7 @@ import {
   Viewer
 } from "cesium";
 import { simulatorConfig } from "../config/simulatorConfig";
+import { resolveMapTileUrl } from "../config/resolveMapUrl";
 import { tickFlight } from "../store/flightSlice";
 import type { FlightInputs, FlightState } from "../types/flight";
 import type { FlightViewMode } from "../types/viewMode";
@@ -67,12 +68,9 @@ export default function CesiumScene({ inputsRef, config = simulatorConfig, viewM
     viewerRef.current = viewer;
     viewer.imageryLayers.removeAll();
 
-    if (config.map.mode === "ONLINE_ESRI") {
-      viewer.imageryLayers.addImageryProvider(new UrlTemplateImageryProvider({ url: config.map.onlineEsriUrl }));
-    }
-
-    if (config.map.mode === "LOCAL_XYZ") {
-      viewer.imageryLayers.addImageryProvider(new UrlTemplateImageryProvider({ url: config.map.localXyzUrl }));
+    const tileUrl = resolveMapTileUrl(config.map);
+    if (tileUrl) {
+      viewer.imageryLayers.addImageryProvider(new UrlTemplateImageryProvider({ url: tileUrl }));
     }
 
     viewer.scene.globe.depthTestAgainstTerrain = config.scene.depthTestAgainstTerrain;

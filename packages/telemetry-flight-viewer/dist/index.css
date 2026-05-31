@@ -1,0 +1,362 @@
+/* src/ui/overlay.css */
+.tfv-root {
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family:
+    "JetBrains Mono",
+    "SF Mono",
+    Consolas,
+    "Liberation Mono",
+    monospace;
+  color: #d1fae5;
+  -webkit-font-smoothing: antialiased;
+}
+.tfv-root *,
+.tfv-root *::before,
+.tfv-root *::after {
+  box-sizing: border-box;
+}
+.tfv-root--embedded {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background: #020617;
+}
+.tfv-root--floating {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  width: 0;
+  height: 0;
+  overflow: visible;
+}
+.tfv-floating {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  background: rgba(2, 10, 8, 0.94);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.5),
+    0 20px 50px rgba(0, 0, 0, 0.55),
+    0 0 24px rgba(74, 222, 128, 0.08);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+.tfv-floating--dragging {
+  user-select: none;
+  cursor: grabbing;
+  box-shadow:
+    0 0 0 1px rgba(74, 222, 128, 0.5),
+    0 28px 60px rgba(0, 0, 0, 0.6),
+    0 0 32px rgba(74, 222, 128, 0.15);
+}
+.tfv-floating__header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #86efac;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(6, 24, 14, 0.95) 0%,
+      rgba(2, 12, 8, 0.98) 100%);
+  border-bottom: 1px solid rgba(74, 222, 128, 0.28);
+  cursor: grab;
+  touch-action: none;
+}
+.tfv-floating__header::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.9);
+}
+.tfv-floating__header--active {
+  cursor: grabbing;
+  color: #bbf7d0;
+}
+.tfv-viewport {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: #030712;
+}
+.tfv-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.tfv-hud {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  overflow: hidden;
+}
+.tfv-hud::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.03) 2px,
+      rgba(0, 0, 0, 0.03) 4px);
+  opacity: 0.35;
+  pointer-events: none;
+}
+.tfv-hud__bar {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: calc(100% - 16px);
+}
+.tfv-hud__card {
+  min-width: 64px;
+  padding: 5px 9px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(74, 222, 128, 0.32);
+  background: rgba(2, 12, 8, 0.78);
+  text-align: center;
+  box-shadow: inset 0 0 12px rgba(74, 222, 128, 0.04);
+}
+.tfv-hud__card-label {
+  display: block;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: rgba(134, 239, 172, 0.75);
+}
+.tfv-hud__card-value {
+  display: block;
+  margin-top: 2px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #ecfdf5;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 10px rgba(74, 222, 128, 0.35);
+}
+.tfv-hud__crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.tfv-hud__crosshair-h {
+  width: 100px;
+  height: 1px;
+  background: rgba(187, 247, 208, 0.65);
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
+}
+.tfv-hud__crosshair-v {
+  width: 1px;
+  height: 40px;
+  margin: -20px auto 0;
+  background: rgba(187, 247, 208, 0.65);
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
+}
+.tfv-hud__crosshair-dot {
+  width: 5px;
+  height: 5px;
+  margin: -2px auto 0;
+  border: 1px solid #4ade80;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.8);
+}
+.tfv-hud__instruments {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+.tfv-compass {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 1px solid rgba(74, 222, 128, 0.38);
+  background: rgba(2, 12, 8, 0.82);
+  position: relative;
+  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.45);
+}
+.tfv-compass__rose {
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  border: 1px dashed rgba(74, 222, 128, 0.28);
+  will-change: transform;
+}
+.tfv-compass__tick-n,
+.tfv-compass__tick-e,
+.tfv-compass__tick-s,
+.tfv-compass__tick-w {
+  position: absolute;
+  font-size: 7px;
+  font-weight: 700;
+  color: rgba(134, 239, 172, 0.7);
+}
+.tfv-compass__tick-n {
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.tfv-compass__tick-e {
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.tfv-compass__tick-s {
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.tfv-compass__tick-w {
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.tfv-compass__needle {
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  width: 2px;
+  height: 26px;
+  margin-left: -1px;
+  background: #f87171;
+  box-shadow: 0 0 8px rgba(248, 113, 113, 0.85);
+}
+.tfv-compass__label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #ecfdf5;
+  font-variant-numeric: tabular-nums;
+}
+.tfv-horizon {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  border: 1px solid rgba(74, 222, 128, 0.38);
+  overflow: hidden;
+  background: #0f172a;
+  position: relative;
+  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.5);
+}
+.tfv-horizon__bank {
+  position: absolute;
+  inset: 0;
+  transform-origin: center center;
+  will-change: transform;
+}
+.tfv-horizon__pitch {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 200%;
+  top: -50%;
+  will-change: transform;
+}
+.tfv-horizon__sky,
+.tfv-horizon__ground {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+}
+.tfv-horizon__sky {
+  top: 0;
+  background:
+    linear-gradient(
+      180deg,
+      #1e3a5f 0%,
+      #2563eb 55%,
+      #38bdf8 100%);
+}
+.tfv-horizon__ground {
+  bottom: 0;
+  background:
+    linear-gradient(
+      0deg,
+      #3f2f23 0%,
+      #57534e 45%,
+      #78716c 100%);
+}
+.tfv-horizon__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px rgba(2, 8, 6, 0.65);
+  pointer-events: none;
+}
+.tfv-horizon__aircraft {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 48px;
+  height: 3px;
+  margin-left: -24px;
+  margin-top: -1px;
+  background: #fef08a;
+  border-radius: 1px;
+  z-index: 3;
+  box-shadow: 0 0 6px rgba(254, 240, 138, 0.6);
+}
+.tfv-hud__attitude {
+  position: absolute;
+  left: 96px;
+  bottom: 14px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(74, 222, 128, 0.25);
+  background: rgba(2, 12, 8, 0.8);
+  font-size: 9px;
+  line-height: 1.55;
+  letter-spacing: 0.06em;
+  color: #bbf7d0;
+  font-variant-numeric: tabular-nums;
+}
+.tfv-hud__status {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  max-width: calc(100% - 24px);
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  color: rgba(187, 247, 208, 0.88);
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(74, 222, 128, 0.22);
+  background: rgba(2, 12, 8, 0.75);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/*# sourceMappingURL=index.css.map */
