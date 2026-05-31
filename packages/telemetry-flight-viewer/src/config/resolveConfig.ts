@@ -160,10 +160,24 @@ function resolveModelConfig(model: ModelConfig): ResolvedModelConfig {
 
   return {
     url,
-    name: model.name?.trim() || "aircraft",
+    name: resolveModelName(model.name),
     scale,
     orientationOffset: resolveOrientationOffset(model.orientationOffset)
   };
+}
+
+/**
+ * Coerces model labels to a non-empty string (handles numeric IDs from external apps).
+ */
+function resolveModelName(name: unknown): string {
+  if (typeof name === "string") {
+    const trimmed = name.trim();
+    return trimmed || "aircraft";
+  }
+  if (name != null && name !== "") {
+    return String(name).trim() || "aircraft";
+  }
+  return "aircraft";
 }
 
 function resolveOrientationOffset(
