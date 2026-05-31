@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Telemetry Flight Viewer — Interactive Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #030712;
+        --panel: rgba(6, 16, 12, 0.92);
+        --border: rgba(74, 222, 128, 0.28);
+        --text: #ecfdf5;
+        --muted: #86efac;
+        --accent: #4ade80;
+        --danger: #f87171;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, system-ui, sans-serif;
+        background:
+          radial-gradient(ellipse 80% 50% at 50% -10%, rgba(74, 222, 128, 0.12), transparent),
+          var(--bg);
+        color: var(--text);
+      }
+
+      .page {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        min-height: 100vh;
+      }
+
+      header {
+        padding: 20px 24px 12px;
+        border-bottom: 1px solid var(--border);
+        background: var(--panel);
+        backdrop-filter: blur(12px);
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 1.35rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      header p {
+        margin: 8px 0 0;
+        font-size: 0.9rem;
+        color: var(--muted);
+        max-width: 720px;
+        line-height: 1.5;
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-top: 16px;
+      }
+
+      button {
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        padding: 10px 16px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: rgba(4, 20, 12, 0.9);
+        color: var(--text);
+        cursor: pointer;
+        transition:
+          background 120ms ease,
+          border-color 120ms ease,
+          transform 80ms ease;
+      }
+
+      button:hover:not(:disabled) {
+        border-color: var(--accent);
+        background: rgba(10, 40, 24, 0.95);
+      }
+
+      button:active:not(:disabled) {
+        transform: scale(0.98);
+      }
+
+      button.primary {
+        background: linear-gradient(180deg, rgba(34, 120, 70, 0.9), rgba(12, 60, 36, 0.95));
+        border-color: rgba(74, 222, 128, 0.55);
+      }
+
+      button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      button.danger {
+        border-color: rgba(248, 113, 113, 0.45);
+        color: #fecaca;
+      }
+
+      .status {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.75rem;
+        color: var(--muted);
+        padding: 6px 10px;
+        border-radius: 4px;
+        border: 1px solid rgba(74, 222, 128, 0.15);
+        background: rgba(2, 10, 8, 0.6);
+      }
+
+      .status.error {
+        color: #fecaca;
+        border-color: rgba(248, 113, 113, 0.35);
+      }
+
+      main {
+        position: relative;
+        min-height: calc(100vh - 200px);
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      #viewer-host {
+        width: 100%;
+        min-height: 0;
+        position: relative;
+      }
+
+      .placeholder {
+        position: relative;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 0.95rem;
+        pointer-events: none;
+      }
+
+      .placeholder strong {
+        color: var(--accent);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.8rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      footer {
+        padding: 12px 24px 20px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.7rem;
+        color: rgba(134, 239, 172, 0.65);
+        border-top: 1px solid rgba(74, 222, 128, 0.12);
+      }
+
+      footer code {
+        color: #bbf7d0;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+          "@cesium-suite/telemetry-flight-viewer": "../dist/index.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <h1>Telemetry Flight Viewer</h1>
+        <p>
+          Telemetry-only 3D viewer — no flight controls. Mock attitude and kinematics
+          are generated below and streamed through <code>updateTelemetry()</code>.
+        </p>
+        <div class="toolbar">
+          <button id="btn-embedded" class="primary" type="button">
+            Start Embedded Viewer
+          </button>
+          <button id="btn-floating" type="button">Start Floating Viewer</button>
+          <button id="btn-destroy" class="danger" type="button" disabled>
+            Destroy Viewer
+          </button>
+          <span id="status" class="status">Idle — choose a display mode</span>
+        </div>
+      </header>
+
+      <main>
+        <div class="placeholder" id="placeholder">
+          <strong>Ready</strong>
+          <span id="placeholder-hint">Select Embedded or Floating to launch the viewer</span>
+        </div>
+        <div id="viewer-host"></div>
+      </main>
+
+      <footer>
+        Model:
+        <code id="model-url-label">Khronos CesiumMan.glb</code>
+        · Run demo:
+        <code>npm run demo</code>
+        from <code>packages/telemetry-flight-viewer</code>
+      </footer>
+    </div>
+
+    <script type="module">
+      import {
+        TelemetryFlightViewer,
+        DEFAULT_DEMO_MODEL_URL
+      } from "@cesium-suite/telemetry-flight-viewer";
+
+      const MODEL_URL = DEFAULT_DEMO_MODEL_URL;
+
+      const host = document.getElementById("viewer-host");
+      const placeholder = document.getElementById("placeholder");
+      const placeholderHint = document.getElementById("placeholder-hint");
+      const statusEl = document.getElementById("status");
+      const modelLabel = document.getElementById("model-url-label");
+      const btnEmbedded = document.getElementById("btn-embedded");
+      const btnFloating = document.getElementById("btn-floating");
+      const btnDestroy = document.getElementById("btn-destroy");
+
+      modelLabel.textContent = MODEL_URL.split("/").pop() ?? MODEL_URL;
+
+      let viewer = null;
+      let telemetryFrameId = null;
+      let simTime = 0;
+      let lastTimestamp = 0;
+
+      function setStatus(message, isError = false) {
+        statusEl.textContent = message;
+        statusEl.classList.toggle("error", isError);
+        console.log(`[Demo] ${message}`);
+      }
+
+      function setControlsLocked(locked) {
+        btnEmbedded.disabled = locked;
+        btnFloating.disabled = locked;
+        btnDestroy.disabled = !locked;
+      }
+
+      function stopTelemetryLoop() {
+        if (telemetryFrameId !== null) {
+          cancelAnimationFrame(telemetryFrameId);
+          telemetryFrameId = null;
+        }
+      }
+
+      /**
+       * Generates smooth mock flight telemetry using sinusoidal motion.
+       */
+      function generateMockTelemetry(t) {
+        const pitch = Math.sin(t * 0.55) * 14 + Math.sin(t * 1.7) * 4;
+        const roll = Math.cos(t * 0.42) * 28 + Math.sin(t * 0.9) * 6;
+        const yaw = ((42 + t * 22) % 360 + 360) % 360;
+        const altitude = 1400 + Math.sin(t * 0.35) * 280 + Math.cos(t * 0.12) * 80;
+        const speed = 68 + Math.sin(t * 0.5) * 18 + Math.cos(t * 0.23) * 8;
+
+        return {
+          pitch,
+          roll,
+          yaw,
+          altitude,
+          speed,
+          latitude: 32.0853 + Math.sin(t * 0.05) * 0.01,
+          longitude: 34.7818 + Math.cos(t * 0.05) * 0.01,
+          timestamp: Date.now()
+        };
+      }
+
+      function startTelemetryLoop() {
+        stopTelemetryLoop();
+        lastTimestamp = performance.now();
+
+        const tick = (now) => {
+          telemetryFrameId = requestAnimationFrame(tick);
+
+          const dt = Math.min((now - lastTimestamp) / 1000, 0.05);
+          lastTimestamp = now;
+          simTime += dt;
+
+          if (viewer?.isReady) {
+            viewer.updateTelemetry(generateMockTelemetry(simTime));
+          }
+        };
+
+        telemetryFrameId = requestAnimationFrame(tick);
+      }
+
+      async function startViewer(displayMode) {
+        if (viewer) {
+          destroyViewer();
+        }
+
+        setControlsLocked(true);
+        const mountTarget = displayMode === "floating" ? document.body : host;
+
+        if (displayMode === "embedded") {
+          placeholder.style.display = "none";
+          host.innerHTML = "";
+        } else {
+          placeholderHint.textContent =
+            "Floating panel active — drag the header to reposition";
+        }
+
+        setStatus(`Loading ${displayMode} viewer…`);
+
+        viewer = new TelemetryFlightViewer(
+          {
+            container: mountTarget,
+            displayMode,
+            model: {
+              url: MODEL_URL,
+              name: "Demo Aircraft",
+              scale: 0.85,
+              orientationOffset: { yaw: 0, pitch: 0, roll: 0 }
+            },
+            floating:
+              displayMode === "floating"
+                ? {
+                    position: "bottom-right",
+                    width: 440,
+                    height: 340,
+                    title: "Live Telemetry",
+                    draggable: true
+                  }
+                : undefined,
+            initialTelemetry: {
+              altitude: 1400,
+              speed: 70,
+              yaw: 42,
+              pitch: 0,
+              roll: 0
+            },
+            environment: {
+              backgroundColor: "#030712",
+              showGrid: true
+            },
+            ui: {
+              compass: true,
+              artificialHorizon: true,
+              telemetryBar: true,
+              crosshair: true,
+              pitchRollReadout: true,
+              statusLine: true
+            }
+          },
+          {
+            onReady: () => setStatus(`${displayMode} viewer ready — streaming mock telemetry`),
+            onError: (err) => setStatus(`Error: ${err.message}`, true)
+          }
+        );
+
+        try {
+          await viewer.initialize();
+          startTelemetryLoop();
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : "Unknown initialization error";
+          setStatus(`Failed to load model or WebGL: ${message}`, true);
+          placeholder.style.display = "flex";
+          placeholderHint.textContent =
+            "Could not load the aircraft model. Check network access to GitHub raw URLs.";
+          destroyViewer();
+        }
+      }
+
+      function destroyViewer() {
+        stopTelemetryLoop();
+        viewer?.destroy();
+        viewer = null;
+        simTime = 0;
+
+        host.innerHTML = "";
+        document.querySelectorAll(".tfv-root--floating").forEach((el) => el.remove());
+
+        placeholder.style.display = "flex";
+        placeholderHint.textContent =
+          "Select Embedded or Floating to launch the viewer";
+
+        setControlsLocked(false);
+        setStatus("Viewer destroyed");
+      }
+
+      btnEmbedded.addEventListener("click", () => startViewer("embedded"));
+      btnFloating.addEventListener("click", () => startViewer("floating"));
+      btnDestroy.addEventListener("click", () => destroyViewer());
+
+      window.addEventListener("beforeunload", () => destroyViewer());
+    </script>
+  </body>
+</html>

@@ -1,0 +1,60 @@
+{
+  "name": "@cesium-suite/telemetry-flight-viewer",
+  "version": "1.0.0",
+  "description": "Production-ready, framework-agnostic 3D telemetry flight viewer powered by Three.js",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "scripts": {
+    "build": "tsup && node scripts/copy-styles.mjs",
+    "dev": "tsup --watch",
+    "demo": "npm run build && vite --config examples/vite.config.ts",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "three.js",
+    "webgl",
+    "telemetry",
+    "flight-viewer",
+    "gltf",
+    "drone",
+    "aviation"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "three": ">=0.160.0 <0.180.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.170.0",
+    "three": "^0.170.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
